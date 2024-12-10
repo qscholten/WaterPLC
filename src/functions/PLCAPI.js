@@ -1,6 +1,7 @@
 const { app } = require('@azure/functions');
 var Client = require('azure-iothub').Client;
-var connectionString = process.env.IOTHUB_CONNECTION_STRING;
+//var connectionString = process.env.IOTHUB_CONNECTION_STRING;
+var connectionString = "HostName=KwiksHub.azure-devices.net;SharedAccessKeyName=PLCnextAXCF2152;SharedAccessKey=gtca4j1jqCU/wxluwd5/yiNv6gb4LsP92AIoTKo+z30="
 var client = Client.fromConnectionString(connectionString);
 
 app.http('PLCAPI', {
@@ -52,6 +53,30 @@ app.http('PLCAPI', {
             return {
                 satus: 500,
                 body: 'Interne serverfout bij verwerken van verzoek van Dashboard'
+            }
+        }
+    }
+});
+
+app.http('PLCTest', {
+    methods: ['POST'],
+    authLevel: 'anonymous',
+    route: 'kwik/',
+    handler: async (request, context) => {
+        context.log("TEST");
+        try {
+            var payload = await request.text();
+            var req = JSON.parse(payload);
+            return {
+                status: 200,
+                body: JSON.stringify(req)
+            }
+        }
+        catch(e) {
+            context.log('Interne fout bij TEST');
+            return {
+                satus: 500,
+                body: 'TEST FOUT'
             }
         }
     }

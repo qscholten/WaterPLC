@@ -1,4 +1,5 @@
 'use strict';
+const axios = require('axios');
 
 const Protocol = require('azure-iot-device-mqtt').Mqtt;
 
@@ -29,8 +30,10 @@ function onZetGrondwaterpeil(request, response) {
 
     try {
         var payload = request.payload;
-        //PLC Aansturing
+        // PLC Aansturing
+        var peil = payload.waterpeil;
         console.log(payload);
+        test();
     }
     catch (e) {
         console.error('Een fout ontstond bij het veranderen van het grondwaterpeil:\n' +
@@ -51,3 +54,32 @@ function printDeviceMethodRequest(request) {
 // get the app rolling
 main();
 
+async function authentication() {
+    try {
+      const response = await axios.post("https://192.168.1.10/_pxc_api/v1.2/auth/auth-token ", {
+        "scope": "variables"
+      }, {
+        headers: {
+        }
+      });
+      console.log('API Response:', response.data);
+    } catch (error) {
+      console.error('Error:', error.message);
+    }
+  }
+
+
+  async function test() {
+    try {
+      const response = await axios.post("http://localhost:7071/api/kwik/", {
+        "scope": "variables"
+      }, {
+        headers: {
+        }
+      });
+  
+      console.log('API Response:', response.data);
+    } catch (error) {
+      console.error('Error:', error.message);
+    }
+  }
