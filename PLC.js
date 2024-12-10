@@ -34,6 +34,16 @@ function onZetGrondwaterpeil(request, response) {
         var peil = payload.waterpeil;
         console.log(payload);
         test();
+        // complete the response
+        /*
+        response.send(200, antwoord, function (err) {
+            if(err) {
+                console.error('An error ocurred when sending a method response:\n' +
+                    err.toString());
+            } else {
+                console.log('Response to method \'' + request.methodName +
+                    '\' sent successfully.' );
+        }*/
     }
     catch (e) {
         console.error('Een fout ontstond bij het veranderen van het grondwaterpeil:\n' +
