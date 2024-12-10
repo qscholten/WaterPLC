@@ -66,13 +66,33 @@ main();
 
 async function authentication() {
     try {
-      const response = await axios.post("https://192.168.1.10/_pxc_api/v1.2/auth/auth-token ", {
+      const responseauth = await axios.post("https://192.168.1.10/_pxc_api/v1.2/auth/auth-token ", {
         "scope": "variables"
       }, {
         headers: {
         }
       });
-      console.log('API Response:', response.data);
+      console.log('API Auth Response:', responseauth.data);
+      try {
+        const auth = responseauth.data.code;
+        const responseacc = await axios.post("https://192.168.1.10/_pxc_api/v1.2/auth/access-token", {
+            "code": auth,
+            "grant_type": "authorization_code",
+            "username": "admin",
+            "password": "PLCPASSWORD"
+        });
+        console.log('API Acc Response:', responseacc.data);
+        try {
+            const acc = responseacc.data.access_token;
+            return acc;
+        }
+        catch (error) {
+            console.error('Error:', error.message);
+        }
+      }
+      catch (error) {
+        console.error('Error:', error.message);
+      }
     } catch (error) {
       console.error('Error:', error.message);
     }
