@@ -1,7 +1,55 @@
 const { app } = require('@azure/functions');
 var Client = require('azure-iothub').Client;
-var connectionString = process.env.IOTHUB_CONNECTION_STRING;
+//var connectionString = process.env.IOTHUB_CONNECTION_STRING;
 var client = Client.fromConnectionString(connectionString);
+
+var leesvariabelen = {"variabelen": [
+    {
+        "naam": "Grondwaterpeil"
+    },
+    {
+        "naam": "Reservoirpeil"
+    }
+]}
+
+app.http('LeesVariabel', {
+    methods: ['GET'],
+    authLevel: 'anonymous',
+    route: 'PLC/{id:int?}',
+    handler: async (request, context) => {
+        context.log(`Http function processed request for url "${request.url}"`);
+
+        try {
+            var id = request.params.id - 1;
+            if (id < leesvariabelen.variabelen.length && id >= 0) {
+                var methodParams = {
+                    methodName: "leesVariabel",
+                    payload: leesvariabelen.variabelen[id],
+                    responseTimeoutInSeconds: 15
+                }
+                var result = await client.invokeDeviceMethod("PLC", methodParams);
+                var value = result.result.payload
+                return {
+                    status: 200,
+                    body: value
+                }
+            }
+            else {
+                return {
+                    status: 404,
+                    body: `Variabele met ID ${id+1} bestaat niet.`
+                }
+            }
+        }
+        catch (error) {
+            context.log("Interne fout bij het lezen van een variabele.")
+            return {
+                satus: 500,
+                body: 'Interne fout bij het lezen van een variabele.'
+            }
+        }
+    }
+});
 
 app.http('PLCAPI', {
     methods: ['POST'],

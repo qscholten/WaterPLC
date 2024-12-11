@@ -24,8 +24,34 @@ function onConnect(err) {
 
         // register handlers for all the method names we are interested in
         client.onDeviceMethod('zetGrondwaterpeil', onZetGrondwaterpeil);
+        client.onDeviceMethod('leesVariabel', onLeesVariabel);
     }
 }
+
+async function onLeesVariabel(request, response) {
+  printDeviceMethodRequest(request);
+  console.log(request.payload);
+  try {
+    var auth = await authentication();
+    var result = await PLCGET(auth, request.payload.naam);
+    response.send(200, result, function (err) {
+      if (err) {
+        console.error('Bij het verzenden van een antwoord ontstond er een fout:\n' +
+          err.toString()
+        );
+      }
+      else {
+        console.log('Antwoord op methodeaanroep \'' + request.methodName +
+          '\' succesvol verzonden.' );
+      }
+    })
+  }
+  catch (e) {
+    console.error('Een fout ontstond bij het lezen van een variabele: \n' + 
+      err.toString());
+  }
+}
+
 
 async function onZetGrondwaterpeil(request, response) {
     printDeviceMethodRequest(request);
@@ -54,6 +80,11 @@ async function onZetGrondwaterpeil(request, response) {
             err.toString());
     };
 }
+
+async function onZetReservoirpeil(request, response) {
+  printDeviceMethodRequest(request);
+}
+
 
 function printDeviceMethodRequest(request) {
     // print method name
@@ -102,6 +133,7 @@ async function authentication() {
     }
   }
 
+// Krijgt een authentication string en een variabele en returnt de waarde van de variabele
 async function PLCGET(auth, variable) {
   var auth = "Bearer " + auth;
   var connstring = "https://192.168.1.10/_pxc_api/api/variables?paths=Arp.Plc.Eclr/" + variable;
@@ -111,8 +143,8 @@ async function PLCGET(auth, variable) {
         "Authorization": auth
       }
     });
-    console.log('API GET Response:', response.data);
-    return response.data;
+    //console.log('API GET Response:', response.data);
+    return response.data.variables[0].value;
   }
   catch (error) {
     console.error('Error GET:', error.message);
