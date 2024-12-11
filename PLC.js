@@ -34,10 +34,10 @@ async function onZetGrondwaterpeil(request, response) {
         var payload = request.payload;
         // PLC Aansturing
         var peil = payload.waterpeil;
-        console.log(peil);
         var auth = await authentication();
-        console.log(auth);
         PLCGET(auth,"Waterklep1Status");
+        auth = await authentication();
+        PLCPUT(auth, "Waterklep1Status", false);
         // complete the response
         /*
         response.send(200, antwoord, function (err) {
@@ -83,7 +83,7 @@ async function authentication() {
             "code": auth,
             "grant_type": "authorization_code",
             "username": "admin",
-            "password": "4f04e830"
+            "password": process.env.PLCPASSWORD
         });
         //console.log('API Acc Response:', responseacc.data);
         try {
@@ -102,36 +102,46 @@ async function authentication() {
     }
   }
 
-
-  async function test() {
-    try {
-      const response = await axios.post("http://localhost:7071/api/kwik/", {
-        "scope": "variables"
-      }, {
-        headers: {
-        }
-      });
-  
-      console.log('API Response:', response.data);
-    } catch (error) {
-      console.error('Error:', error.message);
-    }
+async function PLCGET(auth, variable) {
+  var auth = "Bearer " + auth;
+  var connstring = "https://192.168.1.10/_pxc_api/api/variables?paths=Arp.Plc.Eclr/" + variable;
+  try {
+    const response = await axios.get(connstring, {
+      'headers': {
+        "Authorization": auth
+      }
+    });
+    console.log('API GET Response:', response.data);
+    return response.data;
   }
-
-  async function PLCGET(auth, variable) {
-    var auth2 = "Bearer " + auth;
-    console.log(auth2);
-    var connstring = "https://192.168.1.10/_pxc_api/api/variables?paths=Arp.Plc.Eclr/" + variable;
-    console.log(connstring);
-    try {
-      const response = await axios.get("https://192.168.1.10/_pxc_api/api/variables?paths=Arp.Plc.Eclr/Waterklep1Status", {
-        'headers': {
-          "Authorization": auth2
-        }
-      });
-      console.log('API Response:', response.data);
-    }
-    catch (error) {
-      console.error('Error GET:', error.message);
-    }
+  catch (error) {
+    console.error('Error GET:', error.message);
   }
+}
+
+async function PLCPUT(auth, variable, value) {
+  //var auth = "Bearer " + auth;
+  var connstring = "https://192.168.1.10/_pxc_api/api/variables";
+  try {
+    const response = await axios.put(connstring, {
+      "pathPrefix": "Arp.Plc.Eclr/",
+      "variables":
+      [
+        {
+          "path": variable,
+          "value": value,
+          "valueType": "Constant"
+        }
+      ]
+    }, {
+      'headers': {
+        "Authorization": auth
+      }
+    });
+    console.log('API PUT Response:', response.data);
+    return response.data;
+  }
+  catch (error) {
+    console.error ("Error PUT:", error.message);
+  }
+}
