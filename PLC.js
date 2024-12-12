@@ -23,8 +23,8 @@ function onConnect(err) {
         console.log('Connected to device. Registering handlers for methods.');
 
         // register handlers for all the method names we are interested in
-        client.onDeviceMethod('zetGrondwaterpeil', onZetGrondwaterpeil);
         client.onDeviceMethod('leesVariabel', onLeesVariabel);
+        client.onDeviceMethod('schrijfVariabel', onSchrijfVariabel);
     }
 }
 
@@ -52,48 +52,28 @@ async function onLeesVariabel(request, response) {
   }
 }
 
-
-async function onZetGrondwaterpeil(request, response) {
-    printDeviceMethodRequest(request);
-
-    try {
-        var payload = request.payload;
-        // PLC Aansturing
-        var peil = payload.waterpeil;
-        var auth = await authentication();
-        PLCGET(auth,"Waterklep1Status");
-        auth = await authentication();
-        PLCPUT(auth, "Waterklep1Status", false);
-        // complete the response
-        /*
-        response.send(200, antwoord, function (err) {
-            if(err) {
-                console.error('An error ocurred when sending a method response:\n' +
-                    err.toString());
-            } else {
-                console.log('Response to method \'' + request.methodName +
-                    '\' sent successfully.' );
-        }*/
-    }
-    catch (e) {
-        console.error('Een fout ontstond bij het veranderen van het grondwaterpeil:\n' +
-            err.toString());
-    };
-}
-
-async function onZetReservoirpeil(request, response) {
+async function onSchrijfVariabel(request, response) {
   printDeviceMethodRequest(request);
-}
-
-
-function printDeviceMethodRequest(request) {
-    // print method name
-    console.log('Received method call for method \'' + request.methodName + '\'');
-
-    // if there's a payload just do a default console log on it
-    if(request.payload) {
-        console.log('Payload:\n' + request.payload);
-    }
+  console.log(request.payload);
+  try {
+    var auth = await authentication();
+    var result = await PLCPUT(auth, request.payload.naam, request.payload.waarde);
+    response.send(200, result, function (err) {
+      if (err) {
+        console.error('Bij het verzenden van een antwoord ontstond er een fout:\n' +
+          err.toString()
+        );
+      }
+      else {
+        console.log('Antwoord op methodeaanroep \'' + request.methodName +
+          '\' succesvol verzonden.' );
+      }
+    })
+  }
+  catch (e) {
+    console.error('Een fout ontstond bij het lezen van een variabele: \n' + 
+      err.toString());
+  }
 }
 
 // get the app rolling
@@ -151,6 +131,7 @@ async function PLCGET(auth, variable) {
   }
 }
 
+// Krijgt een authentication string, een variabele en een value en returnt de waarde van de variabele
 async function PLCPUT(auth, variable, value) {
   //var auth = "Bearer " + auth;
   var connstring = "https://192.168.1.10/_pxc_api/api/variables";
@@ -170,10 +151,19 @@ async function PLCPUT(auth, variable, value) {
         "Authorization": auth
       }
     });
-    console.log('API PUT Response:', response.data);
-    return response.data;
+    return response.data.variables[0].value;
   }
   catch (error) {
     console.error ("Error PUT:", error.message);
+  }
+}
+
+function printDeviceMethodRequest(request) {
+  // print method name
+  console.log('Received method call for method \'' + request.methodName + '\'');
+
+  // if there's a payload just do a default console log on it
+  if(request.payload) {
+      console.log('Payload:\n' + request.payload);
   }
 }
