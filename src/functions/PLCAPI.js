@@ -9,6 +9,15 @@ var leesvariabelen = {"variabelen": [
     },
     {
         "naam": "Reservoirpeil"
+    },
+    {
+        "naam": "Grondwaterstand"
+    },
+    {
+        "naam": "Reservoirstand"
+    },
+    {
+        "naam": "Noodstop"
     }
 ]}
 
