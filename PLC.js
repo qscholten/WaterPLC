@@ -56,6 +56,10 @@ async function onSchrijfVariabel(request, response) {
   printDeviceMethodRequest(request);
   console.log(request.payload);
   try {
+    if (request.payload.naam == "ToestemmingBoezem") {
+      var authtemp = await authentication();
+      var temp = await PLCPUT(authtemp, request.payload.naam, false);
+    }
     var auth = await authentication();
     var result = await PLCPUT(auth, request.payload.naam, request.payload.waarde);
     response.send(200, result, function (err) {
@@ -71,7 +75,7 @@ async function onSchrijfVariabel(request, response) {
     })
   }
   catch (e) {
-    console.error('Een fout ontstond bij het lezen van een variabele: \n' + 
+    console.error('Een fout ontstond bij het schrijven van een variabele: \n' + 
       err.toString());
   }
 }
