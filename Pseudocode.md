@@ -1,26 +1,36 @@
 ```cpp
-// Grondwaterbehoud
-if (Grondwaterstand < Grondwaterpeil - 10) {
-    PompReservoirtoGrond aan;
-}
-else {
-    PompReservoirtoGrond uit;
-}
-if (Grondwaterstand > Grondwaterpeil + 10 AND ToestemmingBoezem) {
-    KlepGrondtoBoezem aan
-}
-else {
-    KlepGrondtoBoezem uit;
+while (true) {
+    // Grondwater te laag
+    if (Grondwaterstand < Grondwaterpeil - VariatieGrondwaterpeil) {
+        PompReservoirNaarGrond aan;
+    }
+    else {
+        PompReservoirNaarGrond uit;
+    }
+    // Grondwater te hoog
+    if (Grondwaterstand > Grondwaterpeil + VariatieGrondwaterpeil) {
+        if (ToestemmingBoezem) {
+            KlepGrondNaarBoezem aan;
+        }
+        else {
+            PompGrondNaarReservoir aan;
+        }
+    }
+    else {
+        KlepGrondNaarBoezem uit;
+        PompGrondNaarReservoir uit;
+    }
+    // Reservoir stand te laag
+    if (Reservoirstand < Reservoirpeil - VariatieReservoir AND ToestemmingBoezem) {
+        KlepBoezemNaarReservoir aan;
+    }
+    else {
+        KlepBoezemNaarReservoir uit;
+    }
+    // Reservoir stand te hoog
+    if (Reservoirstand > Reservoirpeil + VariatieReservoir) {
+        Reservoirwaterstand waarschuwing;
+    }
 }
 
-// Reservoirbehoud
-if (Reservoirstand < Reservoirpeil - 10 AND ToestemmingBoezem) {
-    KlepBoezemtoReservoir aan;
-}
-else {
-    KlepBoezemtoReservoir uit;
-}
-if (Reservoirstand > Reservoirpeil + 10) {
-    Pech;
-}
 ```
